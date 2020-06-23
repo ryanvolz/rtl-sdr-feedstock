@@ -12,7 +12,7 @@ source:
     - 0001-Fixed-issues-compiling-on-Windows-with-MSVC.patch
 
 build:
-  number: 0
+  number: 1
   run_exports:
     - {{ pin_subpackage('rtl-sdr', max_pin='x') }}
 

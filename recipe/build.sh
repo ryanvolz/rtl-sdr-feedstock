@@ -19,3 +19,11 @@ cmake_config_args=(
 cmake .. "${cmake_config_args[@]}"
 cmake --build . --config Release -- -j${CPU_COUNT}
 cmake --build . --config Release --target install
+
+# copy udev rule and kernel blacklist so they are accessible by users
+if [[ $target_platform == linux* ]] ; then
+    mkdir -p $PREFIX/lib/udev/rules.d/
+    cp ../rtl-sdr.rules $PREFIX/lib/udev/rules.d/
+    mkdir -p $PREFIX/etc/modprobe.d/
+    cp ../debian/rtl-sdr-blacklist.conf $PREFIX/etc/modprobe.d/
+fi
