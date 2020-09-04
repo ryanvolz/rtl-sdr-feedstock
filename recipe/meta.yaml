@@ -36,15 +36,8 @@ test:
     - setlocal EnableDelayedExpansion  # [win]
 
     # verify that executables get installed
-    {% set cmds = [
-        "rtl_adsb",
-        "rtl_eeprom",
-        "rtl_fm",
-        "rtl_power",
-        "rtl_sdr",
-        "rtl_tcp",
-        "rtl_test",
-    ] %}
+    {% set cmds = ["rtl_adsb", "rtl_eeprom", "rtl_fm", "rtl_power", "rtl_sdr"] %}
+    {% set cmds = cmds + ["rtl_tcp", "rtl_test"] %}
     {% for cmd in cmds %}
     - {{ cmd }} -h || ec=$?; if [ $ec -gt 1 ]; then exit $ec; fi  # [not win]
     - {{ cmd }} -h || if !ERRORLEVEL! LEQ 1 cmd /c "exit /b 0"  # [win]
