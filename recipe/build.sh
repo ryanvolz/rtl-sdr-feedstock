@@ -20,6 +20,9 @@ cmake .. "${cmake_config_args[@]}"
 cmake --build . --config Release -- -j${CPU_COUNT}
 cmake --build . --config Release --target install
 
+# delete static library per conda-forge policy
+rm $PREFIX/lib/librtlsdr.a
+
 # copy udev rule and kernel blacklist so they are accessible by users
 if [[ $target_platform == linux* ]] ; then
     mkdir -p $PREFIX/lib/udev/rules.d/
