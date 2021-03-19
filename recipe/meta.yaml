@@ -12,7 +12,7 @@ source:
     - 0001-Fixed-issues-compiling-on-Windows-with-MSVC.patch
 
 build:
-  number: 1
+  number: 2
   run_exports:
     - {{ pin_subpackage('rtl-sdr', max_pin='x') }}
 
@@ -51,10 +51,8 @@ test:
 
     # verify that libraries get installed
     - test -f $PREFIX/lib/librtlsdr${SHLIB_EXT}  # [not win]
-    - test -f $PREFIX/lib/librtlsdr.a  # [not win]
     - if not exist %PREFIX%\\Library\\bin\\rtlsdr.dll exit 1  # [win]
     - if not exist %PREFIX%\\Library\\lib\\rtlsdr.lib exit 1  # [win]
-    - if not exist %PREFIX%\\Library\\lib\\rtlsdr_static.lib exit 1  # [win]
 
 about:
   home: https://osmocom.org/projects/rtl-sdr/wiki

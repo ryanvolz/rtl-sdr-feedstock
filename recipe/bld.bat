@@ -29,3 +29,6 @@ if errorlevel 1 exit 1
 :: install
 cmake --build . --config Release --target install
 if errorlevel 1 exit 1
+
+:: delete static library per conda-forge policy
+del %LIBRARY_LIB%\rtlsdr_static.lib
