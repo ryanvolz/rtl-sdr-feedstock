@@ -12,8 +12,9 @@ cmake_config_args=(
     -DCMAKE_INSTALL_PREFIX=$PREFIX
     -DLIB_INSTALL_DIR=lib
     -DDETACH_KERNEL_DRIVER=OFF
-    -DENABLE_ZEROCOPY=OFF
     -DINSTALL_UDEV_RULES=OFF
+    -DPROVIDE_UDP_SERVER=ON
+    -DWITH_RPC=ON
 )
 
 cmake .. "${cmake_config_args[@]}"

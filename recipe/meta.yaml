@@ -1,20 +1,23 @@
-{% set name = "rtl-sdr" %}
-{% set version = "0.6.0" %}
+{% set version = "0.8.0" %}
 
 package:
-  name: {{ name|lower }}
+  name: librtlsdr
   version: {{ version }}
 
 source:
-  url: https://github.com/osmocom/{{ name }}/archive/{{ version }}.tar.gz
-  sha256: ee10a76fe0c6601102367d4cdf5c26271e9442d0491aa8df27e5a9bf639cff7c
+  url: https://github.com/librtlsdr/librtlsdr/archive/refs/tags/v{{ version }}.tar.gz
+  sha256: ce18cd70c92d44e81e804b6b4dcd655e0e370d7c8a9c59c6a8fe59e60d3447fc
   patches:
-    - 0001-Fixed-issues-compiling-on-Windows-with-MSVC.patch
+    - 0001-Fixed-issues-compiling-on-Windows-with-MSVC.patch  # steve-m pr 61
+    - handle-usb-bulk-transfer-timeouts.patch  # pr 106
+    # following 2 patches have been merged into librtlsdr after 0.8.0 release
+    - wavewrite-added-missing-gettimeofday-for-msvc.patch  # pr 102
+    - msvc-fix-for-linking-rtl_biast-with-lobopt.patch  # pr 102
 
 build:
-  number: 2
+  number: 0
   run_exports:
-    - {{ pin_subpackage('rtl-sdr', max_pin='x') }}
+    - {{ pin_subpackage('librtlsdr', max_pin='x') }}
 
 requirements:
   build:
@@ -36,8 +39,11 @@ test:
     - setlocal EnableDelayedExpansion  # [win]
 
     # verify that executables get installed
-    {% set cmds = ["rtl_adsb", "rtl_eeprom", "rtl_fm", "rtl_power", "rtl_sdr"] %}
-    {% set cmds = cmds + ["rtl_tcp", "rtl_test"] %}
+    {% set cmds = ["rtl_adsb", "rtl_biast", "rtl_eeprom", "rtl_fm"] %}
+    {% set cmds = cmds + ["rtl_ir" "rtl_power", "rtl_raw2wav"] %}
+    {% set cmds = cmds + ["rtl_sdr", "rtl_tcp", "rtl_test"] %}
+    {% set cmds = cmds + ["rtl_wavestat", "rtl_wavestream"] %}
+    {% set cmds = cmds + ["rtl_rcpd", "rtl_udp"] %}  # [unix]
     {% for cmd in cmds %}
     - {{ cmd }} -h || ec=$?; if [ $ec -gt 1 ]; then exit $ec; fi  # [not win]
     - {{ cmd }} -h || if !ERRORLEVEL! LEQ 1 cmd /c "exit /b 0"  # [win]
@@ -55,18 +61,21 @@ test:
     - if not exist %PREFIX%\\Library\\lib\\rtlsdr.lib exit 1  # [win]
 
 about:
-  home: https://osmocom.org/projects/rtl-sdr/wiki
+  home: https://github.com/librtlsdr/librtlsdr
   license: GPL-2.0-or-later AND LGPL-2.1-or-later
   license_family: GPL
   license_file: COPYING
-  summary: 'Library for using an Realtek RTL2832-based DVB dongle as an SDR receiver'
-  description: |
-    DVB-T dongles based on the Realtek RTL2832U can be used as a cheap SDR, since the
-    chip allows transferring the raw I/Q samples to the host, which is officially used
-    for DAB/DAB+/FM demodulation. The possibility of this has been discovered by Eric
-    Fry (http://rtlsdr.org/#history_and_discovery_of_rtlsdr).
-  doc_url: https://osmocom.org/projects/rtl-sdr/wiki
-  dev_url: https://osmocom.org/projects/rtl-sdr/repository
+  summary: 'Software for using an Realtek RTL2832-based DVB dongle as an SDR receiver'
+  description: >
+    since the chip allows transferring the raw I/Q samples to the host, which is
+    DVB-T dongles based on the Realtek RTL2832U can be used as a cheap SDR,
+    officially used for DAB/DAB+/FM demodulation.
+
+    This package contains the community-support fork of Osmocom's rtl-sdr,
+    "librtlsdr". Please direct all support requests to the librtlsdr Github
+    page. For more information on the parent project, visit
+    https://osmocom.org/projects/rtl-sdr/wiki.
+  dev_url: https://github.com/librtlsdr/librtlsdr
 
 extra:
   recipe-maintainers:

@@ -1,0 +1,49 @@
+From 325e399f11c651476a27662b9b1b03498936792b Mon Sep 17 00:00:00 2001
+From: Vasilis Tsiligiannis <acinonyx@openwrt.gr>
+Date: Wed, 17 Feb 2021 17:14:14 +0200
+Subject: [PATCH] Handle USB bulk transfer timeouts
+
+This is a workaround for USB bulk transfer stall as describe on issue
+ #105. Consider consecutive transfer timeouts as errors and count them
+as such. Additionally, try to USB reset devices that are lost for any
+reason.
+
+Signed-off-by: Vasilis Tsiligiannis <acinonyx@openwrt.gr>
+---
+ src/librtlsdr.c | 9 +++++++--
+ 1 file changed, 7 insertions(+), 2 deletions(-)
+
+diff --git a/src/librtlsdr.c b/src/librtlsdr.c
+index bcf7602..5b64508 100644
+--- a/src/librtlsdr.c
++++ b/src/librtlsdr.c
+@@ -713,7 +713,7 @@ static rtlsdr_dongle_t known_devices[] = {
+ #define CTRL_IN			(LIBUSB_REQUEST_TYPE_VENDOR | LIBUSB_ENDPOINT_IN)
+ #define CTRL_OUT		(LIBUSB_REQUEST_TYPE_VENDOR | LIBUSB_ENDPOINT_OUT)
+ #define CTRL_TIMEOUT	300
+-#define BULK_TIMEOUT	0
++#define BULK_TIMEOUT	10000
+ 
+ #define EEPROM_ADDR	0xa0
+ 
+@@ -3453,6 +3453,10 @@ int rtlsdr_close(rtlsdr_dev_t *dev)
+ 
+ 		rtlsdr_deinit_baseband(dev);
+ 	}
++	else {
++		fprintf(stderr, "Resetting device...\n");
++		libusb_reset_device(dev->devh);
++	}
+ 
+ 	softagc_uninit(dev);
+ 	pthread_mutex_destroy(&dev->cs_mutex);
+@@ -3799,7 +3803,8 @@ static void LIBUSB_CALL _libusb_callback(struct libusb_transfer *xfer)
+ 		dev->xfer_errors = 0;
+ 	} else if (LIBUSB_TRANSFER_CANCELLED != xfer->status) {
+ #ifndef _WIN32
+-		if (LIBUSB_TRANSFER_ERROR == xfer->status)
++		if (LIBUSB_TRANSFER_ERROR == xfer->status ||
++				LIBUSB_TRANSFER_TIMED_OUT == xfer->status)
+ 			dev->xfer_errors++;
+ 
+ 		if (dev->xfer_errors >= dev->xfer_buf_num ||
